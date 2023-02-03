@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-distributed-index-cache
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: index-cache
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-distributed
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/component: index-cache
+  updateStrategy:
+    type: RollingUpdate
+  serviceName: mimir-distributed-index-cache-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-distributed
+        app.kubernetes.io/instance: mimir
+        app.kubernetes.io/component: index-cache
+    spec:
+      serviceAccountName: mimir-distributed
+      securityContext:
+        fsGroup: 11211
+        runAsGroup: 11211
+        runAsNonRoot: true
+        runAsUser: 11211
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: memcached
+          image: memcached:1.6.16-alpine
+          imagePullPolicy: IfNotPresent
+          args:
+            - -m 2048
+            - -o
+            - modern
+            - -I 5m
+            - -c 16384
+            - -v
+            - -u 11211
+          ports:
+            - containerPort: 11211
+              name: client
+{{ if eq .Values.setresources true }}
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 500m
+              memory: 2Gi
+{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+        - name: exporter
+          image: prom/memcached-exporter:v0.6.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--memcached.address=localhost:11211"
+            - "--web.listen-address=0.0.0.0:9150"
+          ports:
+            - containerPort: 9150
+              name: http-metrics
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true

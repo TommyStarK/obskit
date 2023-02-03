@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-metadata-cache-headless
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: metadata-cache
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: metadata-cache
+  ports:
+    - name: memcached-client
+      port: 11211
+      targetPort: 11211
+    - name: http-metrics
+      port: 9150
+      targetPort: 9150

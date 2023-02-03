@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mimir-distributed-gateway
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gateway
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mimir-distributed-gateway
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: mimir-distributed-gateway-tls

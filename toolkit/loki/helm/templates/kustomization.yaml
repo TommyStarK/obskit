@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- configmap/default.yaml
+- configmap/gateway.yaml
+- configmap/runtime.yaml
+- serviceaccount/loki.yaml
+{{ if eq .Values.persistence true }}
+- storageclass/loki.yaml
+- persistentvolumeclaim/compactor.yaml
+- persistentvolumeclaim/ingester.yaml
+- persistentvolumeclaim/index-gateway.yaml
+{{ end }}
+- service/memberlist.yaml
+- service/memcached-chunks.yaml
+- statefulset/memcached-chunks.yaml
+- service/memcached-index-writes.yaml
+- statefulset/memcached-index-writes.yaml
+- service/memcached-index-queries.yaml
+- statefulset/memcached-index-queries.yaml
+- service/ingester-headless.yaml
+- service/ingester.yaml
+- statefulset/ingester.yaml
+- service/distributor.yaml
+- deployment/distributor.yaml
+- service/compactor.yaml
+- deployment/compactor.yaml
+- service/querier.yaml
+- deployment/querier.yaml
+{{ if eq .Values.minikube false }}
+- poddisruptionbudget/query-scheduler.yaml
+{{ end }}
+- service/query-scheduler.yaml
+- deployment/query-scheduler.yaml
+- service/query-frontend-headless.yaml
+- service/query-frontend.yaml
+- deployment/query-frontend.yaml
+- service/index-gateway-headless.yaml
+- service/index-gateway.yaml
+- statefulset/index-gateway.yaml
+- service/gateway.yaml
+- deployment/gateway.yaml
+{{ if eq .Values.ingress.enable true }}
+- secret/gateway-tls.yaml
+- ingress/gateway.yaml
+{{ end }}
+{{ if eq .Values.selfmonitor true }}
+- servicemonitor/memcached-chunks.yaml
+- servicemonitor/memcached-index-writes.yaml
+- servicemonitor/memcached-index-queries.yaml
+- servicemonitor/ingester.yaml
+- servicemonitor/distributor.yaml
+- servicemonitor/compactor.yaml
+- servicemonitor/querier.yaml
+- servicemonitor/query-scheduler.yaml
+- servicemonitor/query-frontend.yaml
+- servicemonitor/index-gateway.yaml
+{{ end }}
+{{ if eq .Values.autoscaling true }}
+- horizontalpodautoscaler/ingester.yaml
+- horizontalpodautoscaler/distributor.yaml
+- horizontalpodautoscaler/querier.yaml
+- horizontalpodautoscaler/query-frontend.yaml
+- horizontalpodautoscaler/gateway.yaml
+{{ end }}

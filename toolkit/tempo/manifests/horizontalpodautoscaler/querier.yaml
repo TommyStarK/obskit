@@ -1,0 +1,25 @@
+---
+# Source: tempo-distributed/templates/horizontalpodautoscaler/querier.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tempo-distributed-querier
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: querier
+spec:
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tempo-distributed-querier

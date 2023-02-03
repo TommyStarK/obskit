@@ -1,0 +1,42 @@
+namespace: obskit
+
+autoscaling: false
+minikube: false
+persistence: false
+selfmonitor: false
+setresources: false
+
+log:
+  format: logfmt
+  level: debug
+
+ingress:
+  enable: false
+  host: tempo.obskit.com
+
+compactor:
+  compaction_interval: 5m
+
+distributor:
+  maxReplicas: 3
+
+gateway:
+  maxReplicas: 3
+
+ingester:
+  maxReplicas: 3
+
+querier:
+  maxReplicas: 3
+
+query_frontend:
+  maxReplicas: 3
+
+storage:
+  boltdb_shipper:
+    cache_ttl: 168h
+  s3:
+    access_key: <ACCES_KEY>
+    secret_access_key: <SECRET_ACCES_KEY>
+    endpoint: <ENDPOINT>
+    bucket: <BUCKET_NAME>

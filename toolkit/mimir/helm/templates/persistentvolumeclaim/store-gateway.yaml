@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-a
+  namespace: {{ .Values.namespace }}
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-b
+  namespace: {{ .Values.namespace }}
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-c
+  namespace: {{ .Values.namespace }}
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

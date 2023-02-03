@@ -1,0 +1,10 @@
+---
+# Source: mimir-distributed/templates/serviceaccount/mimir.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mimir-distributed
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir

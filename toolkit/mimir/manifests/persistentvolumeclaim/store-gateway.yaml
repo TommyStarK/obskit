@@ -1,0 +1,42 @@
+---
+# Source: mimir-distributed/templates/persistentvolumeclaim/store-gateway.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-a
+  namespace: obskit
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+# Source: mimir-distributed/templates/persistentvolumeclaim/store-gateway.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-b
+  namespace: obskit
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+# Source: mimir-distributed/templates/persistentvolumeclaim/store-gateway.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-store-gateway-zone-c
+  namespace: obskit
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

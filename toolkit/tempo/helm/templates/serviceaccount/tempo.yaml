@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tempo-distributed
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+automountServiceAccountToken: false

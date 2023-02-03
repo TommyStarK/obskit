@@ -1,0 +1,22 @@
+---
+# Source: tempo-distributed/templates/service/gateway.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-distributed-gateway
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: gateway
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: gateway
+  ports:
+    - name: http-metrics
+      port: 80
+      targetPort: http-metrics
+      protocol: TCP

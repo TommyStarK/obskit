@@ -1,0 +1,404 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-distributed-store-gateway-zone-a
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-a
+    rollout-group: store-gateway
+    zone: zone-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-distributed
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/component: store-gateway
+      rollout-group: store-gateway
+      zone: zone-a
+  updateStrategy:
+    type: OnDelete
+  serviceName: mimir-distributed-store-gateway-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-distributed
+        app.kubernetes.io/instance: mimir
+        app.kubernetes.io/component: store-gateway
+        app.kubernetes.io/part-of: memberlist
+        name: store-gateway-zone-a
+        rollout-group: store-gateway
+        zone: zone-a
+    spec:
+{{ if eq .Values.minikube false }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: rollout-group
+                operator: In
+                values:
+                - store-gateway
+              - key: app.kubernetes.io/component
+                operator: NotIn
+                values:
+                - store-gateway-zone-a
+            topologyKey: kubernetes.io/hostname
+{{ end }}
+      serviceAccountName: mimir-distributed
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: mimir-distributed
+              app.kubernetes.io/instance: mimir
+              app.kubernetes.io/component: store-gateway
+      terminationGracePeriodSeconds: 240
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-distributed-config
+        - name: runtime-config
+          configMap:
+            name: mimir-distributed-runtime
+        - name: data
+{{ if eq .Values.persistence false }}
+          emptyDir: {}
+{{ else }}
+          persistentVolumeClaim:
+            claimName: mimir-distributed-store-gateway-zone-a
+{{ end }}
+        - name: active-queries
+          emptyDir: {}
+      containers:
+        - name: store-gateway
+          image: "grafana/mimir:2.5.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-target=store-gateway"
+            - "-config.expand-env=true"
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-store-gateway.sharding-ring.instance-availability-zone=zone-a"
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 9095
+              protocol: TCP
+            - name: memberlist
+              containerPort: 7946
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 60
+{{ if eq .Values.setresources true }}
+          resources:
+            requests:
+              cpu: 1
+              memory: 2Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
+{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mimir
+            - name: runtime-config
+              mountPath: /var/mimir
+            - name: data
+              mountPath: "/data"
+            - name: active-queries
+              mountPath: /active-query-tracker
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-distributed-store-gateway-zone-b
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-b
+    rollout-group: store-gateway
+    zone: zone-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-distributed
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/component: store-gateway
+      rollout-group: store-gateway
+      zone: zone-b
+  updateStrategy:
+    type: OnDelete
+  serviceName: mimir-distributed-store-gateway-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-distributed
+        app.kubernetes.io/instance: mimir
+        app.kubernetes.io/component: store-gateway
+        app.kubernetes.io/part-of: memberlist
+        name: store-gateway-zone-b
+        rollout-group: store-gateway
+        zone: zone-b
+    spec:
+{{ if eq .Values.minikube false }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: rollout-group
+                operator: In
+                values:
+                - store-gateway
+              - key: app.kubernetes.io/component
+                operator: NotIn
+                values:
+                - store-gateway-zone-b
+            topologyKey: kubernetes.io/hostname
+{{ end }}
+      serviceAccountName: mimir-distributed
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: mimir-distributed
+              app.kubernetes.io/instance: mimir
+              app.kubernetes.io/component: store-gateway
+      terminationGracePeriodSeconds: 240
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-distributed-config
+        - name: runtime-config
+          configMap:
+            name: mimir-distributed-runtime
+        - name: data
+{{ if eq .Values.persistence false }}
+          emptyDir: {}
+{{ else }}
+          persistentVolumeClaim:
+            claimName: mimir-distributed-store-gateway-zone-b
+{{ end }}
+        - name: active-queries
+          emptyDir: {}
+      containers:
+        - name: store-gateway
+          image: "grafana/mimir:2.5.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-target=store-gateway"
+            - "-config.expand-env=true"
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-store-gateway.sharding-ring.instance-availability-zone=zone-b"
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 9095
+              protocol: TCP
+            - name: memberlist
+              containerPort: 7946
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 60
+{{ if eq .Values.setresources true }}
+          resources:
+            requests:
+              cpu: 1
+              memory: 2Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
+{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mimir
+            - name: runtime-config
+              mountPath: /var/mimir
+            - name: data
+              mountPath: "/data"
+            - name: active-queries
+              mountPath: /active-query-tracker
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-distributed-store-gateway-zone-c
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-c
+    rollout-group: store-gateway
+    zone: zone-c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-distributed
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/component: store-gateway
+      rollout-group: store-gateway
+      zone: zone-c
+  updateStrategy:
+    type: OnDelete
+  serviceName: mimir-distributed-store-gateway-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-distributed
+        app.kubernetes.io/instance: mimir
+        app.kubernetes.io/component: store-gateway
+        app.kubernetes.io/part-of: memberlist
+        name: store-gateway-zone-c
+        rollout-group: store-gateway
+        zone: zone-c
+    spec:
+{{ if eq .Values.minikube false }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: rollout-group
+                operator: In
+                values:
+                - store-gateway
+              - key: app.kubernetes.io/component
+                operator: NotIn
+                values:
+                - store-gateway-zone-c
+            topologyKey: kubernetes.io/hostname
+{{ end }}
+      serviceAccountName: mimir-distributed
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: mimir-distributed
+              app.kubernetes.io/instance: mimir
+              app.kubernetes.io/component: store-gateway
+      terminationGracePeriodSeconds: 240
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-distributed-config
+        - name: runtime-config
+          configMap:
+            name: mimir-distributed-runtime
+        - name: data
+{{ if eq .Values.persistence false }}
+          emptyDir: {}
+{{ else }}
+          persistentVolumeClaim:
+            claimName: mimir-distributed-store-gateway-zone-c
+{{ end }}
+        - name: active-queries
+          emptyDir: {}
+      containers:
+        - name: store-gateway
+          image: "grafana/mimir:2.5.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-target=store-gateway"
+            - "-config.expand-env=true"
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-store-gateway.sharding-ring.instance-availability-zone=zone-c"
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 9095
+              protocol: TCP
+            - name: memberlist
+              containerPort: 7946
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 60
+{{ if eq .Values.setresources true }}
+          resources:
+            requests:
+              cpu: 1
+              memory: 2Gi
+            limits:
+              cpu: 1
+              memory: 2Gi
+{{ end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mimir
+            - name: runtime-config
+              mountPath: /var/mimir
+            - name: data
+              mountPath: "/data"
+            - name: active-queries
+              mountPath: /active-query-tracker

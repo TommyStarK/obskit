@@ -1,0 +1,142 @@
+#!/usr/local/bin/bash
+
+. ${PWD}/hack/helm.sh
+. ${PWD}/hack/kubectl.sh
+
+for i in "$@"; do
+	case $i in
+		-t=*|--target=*)
+		TARGET="${i#*=}"
+		shift # past argument=value
+		;;
+		-c=*|--cluster=*)
+		CLUSTER="${i#*=}"
+		shift # past argument=value
+		;;
+		--setup-cluster)
+		CLUSTER_SETUP=YES
+		shift # past argument with no value
+		;;
+		--deploy-agent)
+		AGENT_DEPLOY=YES
+		shift # past argument with no value
+		;;
+		--delete)
+		DELETE=YES
+		shift # past argument with no value
+		;;
+		--render-template)
+		RENDERING_TEMPLATE=YES
+		shift # past argument with no value
+		;;
+		-h|--help)
+		shift # past argument with no value
+		cat << EOF
+obskit - Observability as a service toolkit for Kubernetes
+
+Usage: 	obskit [options] --deploy-agent
+	obskit [options] --render-template
+	obskit [options] --setup-cluster
+	obskit [options] --delete
+
+Options:
+	-c | --cluster    Specify Kubernetes cluster
+	-t | --target     Grafana tool (grafana,loki,tempo,mimir,grafana-agent)
+
+Examples:
+	# Render templates for Tempo and Loki
+	./obskit --render-template --target=tempo,loki
+
+	# Deploy Grafana Agent to minikube
+	./obskit --deploy-agent --cluster=minikube
+
+	# Deploy the LGTM stack to Kubernetes cluster 'demo'
+	./obskit --setup-cluster --cluster=demo
+
+	# Deploy Loki and Mimir to Kubernetes cluster 'demo'
+	./obskit --setup-cluster --cluster=demo --target=loki,mimir
+
+	# Delete Loki and Mimir from Kubernetes cluster 'demo'
+	./obskit --delete --cluster=demo --target=loki,mimir
+EOF
+		;;
+		-*|--*)
+		echo "Unknown option $i, see -h | --help flag"
+		exit 1
+		;;
+		*)
+		;;
+	esac
+done
+
+__context_handler() {
+	if [ ! -z "$CLUSTER" ]; then
+		kubectl::context::set $CLUSTER >/dev/null 2>&1
+		check::status
+	fi
+}
+
+__delete() {
+	__context_handler
+
+	IFS=','
+	read -a targets <<< "$TARGET"
+
+	for target in "${targets[@]}"; do
+		kubectl::delete $target
+	done
+}
+
+__deploy_agent() {
+	__context_handler
+	__info "deploy agent on cluster: $(kubectl::context::current)"
+	kubectl::apply grafana-agent
+}
+
+__render_template() {
+	if [ -z "$TARGET" ]; then
+		helm::template
+	else
+		IFS=','
+		read -a targets <<< "$TARGET"
+
+		for target in "${targets[@]}"; do
+			helm::template $target
+		done
+	fi
+}
+
+__setup_cluster() {
+	__context_handler
+
+	if [ -z "$TARGET" ]; then
+		__info "setup LGTM stack to cluster: $(kubectl::context::current)"
+		kubectl::apply loki
+		kubectl::apply mimir
+		kubectl::apply tempo
+		kubectl::apply grafana
+	else
+		IFS=','
+		read -a targets <<< "$TARGET"
+
+		for target in "${targets[@]}"; do
+			if [ -z "${charts[$target]}" ]; then
+				__info "unknown target: $target"
+				exit 1
+			else
+				__info "deploying $target to cluster: $(kubectl::context::current)"
+				kubectl::apply $target
+			fi
+		done
+	fi
+}
+
+if [[ "$AGENT_DEPLOY" = "YES" ]]; then
+    __deploy_agent
+elif [[ "$RENDERING_TEMPLATE" = "YES" ]]; then
+    __render_template
+elif [[ "$CLUSTER_SETUP" = "YES" ]]; then
+    __setup_cluster
+elif [[ "$DELETE" = "YES" ]]; then
+    __delete
+fi

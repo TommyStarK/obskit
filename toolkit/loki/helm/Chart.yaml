@@ -1,0 +1,4 @@
+apiVersion: v2
+name: loki-distributed
+version: 0.0.1
+

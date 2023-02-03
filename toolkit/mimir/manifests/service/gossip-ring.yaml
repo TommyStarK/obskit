@@ -1,0 +1,24 @@
+---
+# Source: mimir-distributed/templates/service/gossip-ring.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-gossip-ring
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gossip-ring
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/part-of: memberlist
+  ports:
+    - name: gossip-ring
+      port: 7946
+      protocol: TCP
+      targetPort: 7946

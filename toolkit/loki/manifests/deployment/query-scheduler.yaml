@@ -1,0 +1,82 @@
+---
+# Source: loki-distributed/templates/deployment/query-scheduler.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki-distributed-query-scheduler
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: query-scheduler
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki-distributed
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/component: query-scheduler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki-distributed
+        app.kubernetes.io/instance: loki
+        app.kubernetes.io/component: query-scheduler
+    spec:
+
+      serviceAccountName: loki-distributed
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: loki-distributed-config
+        - name: runtime-config
+          configMap:
+            name: loki-distributed-runtime
+      containers:
+        - name: query-scheduler
+          image: docker.io/grafana/loki:2.7.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - -config.file=/etc/loki/config/config.yaml
+            - -target=query-scheduler
+          ports:
+            - name: http
+              containerPort: 3100
+              protocol: TCP
+            - name: grpc
+              containerPort: 9095
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 300
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki/config
+            - name: runtime-config
+              mountPath: /var/loki-distributed-runtime

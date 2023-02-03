@@ -1,0 +1,25 @@
+---
+# Source: mimir-distributed/templates/service/index-cache-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-index-cache-headless
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: index-cache
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: index-cache
+  ports:
+    - name: memcached-client
+      port: 11211
+      targetPort: 11211
+    - name: http-metrics
+      port: 9150
+      targetPort: 9150

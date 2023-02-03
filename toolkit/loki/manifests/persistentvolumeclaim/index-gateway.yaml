@@ -1,0 +1,14 @@
+---
+# Source: loki-distributed/templates/persistentvolumeclaim/index-gateway.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-distributed-index-gateway
+  namespace: obskit
+spec:
+  storageClassName: loki-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

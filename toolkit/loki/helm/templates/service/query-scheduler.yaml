@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-distributed-query-scheduler
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: query-scheduler
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: query-scheduler
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpclb
+      port: 9095
+      targetPort: grpc
+      protocol: TCP

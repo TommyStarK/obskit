@@ -1,0 +1,96 @@
+---
+# Source: mimir-distributed/templates/service/ingester.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-ingester-zone-a
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: memberlist
+    name: ingester-zone-a
+    rollout-group: ingester
+    zone: zone-a
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    rollout-group: ingester
+    zone: zone-a
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc
+---
+# Source: mimir-distributed/templates/service/ingester.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-ingester-zone-b
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: memberlist
+    name: ingester-zone-b
+    rollout-group: ingester
+    zone: zone-b
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    rollout-group: ingester
+    zone: zone-b
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc
+---
+# Source: mimir-distributed/templates/service/ingester.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-ingester-zone-c
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: memberlist
+    name: ingester-zone-c
+    rollout-group: ingester
+    zone: zone-c
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: ingester
+    rollout-group: ingester
+    zone: zone-c
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc

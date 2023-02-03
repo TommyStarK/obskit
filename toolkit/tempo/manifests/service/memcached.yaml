@@ -1,0 +1,23 @@
+---
+# Source: tempo-distributed/templates/service/memcached.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-distributed-memcached
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: memcached
+spec:
+  selector:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: memcached
+  ports:
+  - name: memcached-client
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    targetPort: http-metrics

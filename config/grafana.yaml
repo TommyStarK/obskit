@@ -1,0 +1,17 @@
+namespace: obskit
+
+log:
+  format: console
+  level: debug
+
+ingress:
+  enable: false
+  host: grafana.obskit.com
+
+remotes:
+  loki:
+    url: http://loki-distributed-gateway:80
+  mimir:
+    url: http://mimir-distributed-gateway:80/prometheus
+  tempo:
+    url: http://tempo-distributed-gateway:80

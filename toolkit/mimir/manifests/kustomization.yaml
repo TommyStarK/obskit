@@ -1,0 +1,42 @@
+---
+# Source: mimir-distributed/templates/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- configmap/default.yaml
+- configmap/gateway.yaml
+- configmap/runtime.yaml
+- serviceaccount/mimir.yaml
+
+- service/gossip-ring.yaml
+- service/metadata-cache-headless.yaml
+- statefulset/metadata-cache.yaml
+- service/chunks-cache-headless.yaml
+- statefulset/chunks-cache.yaml
+- service/index-cache-headless.yaml
+- statefulset/index-cache.yaml
+- service/results-cache-headless.yaml
+- statefulset/results-cache.yaml
+
+- service/ingester-headless.yaml
+- service/ingester.yaml
+- statefulset/ingester.yaml
+- service/distributor-headless.yaml
+- service/distributor.yaml
+- deployment/distributor.yaml
+
+- service/store-gateway-headless.yaml
+- service/store-gateway.yaml
+- statefulset/store-gateway.yaml
+- service/compactor.yaml
+- statefulset/compactor.yaml
+- service/querier.yaml
+- deployment/querier.yaml
+- service/query-scheduler-headless.yaml
+- service/query-scheduler.yaml
+- deployment/query-scheduler.yaml
+- service/query-frontend-headless.yaml
+- service/query-frontend.yaml
+- deployment/query-frontend.yaml
+- service/gateway.yaml
+- deployment/gateway.yaml

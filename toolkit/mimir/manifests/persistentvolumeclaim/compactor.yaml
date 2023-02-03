@@ -1,0 +1,14 @@
+---
+# Source: mimir-distributed/templates/persistentvolumeclaim/compactor.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-distributed-compactor
+  namespace: obskit
+spec:
+  storageClassName: mimir-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

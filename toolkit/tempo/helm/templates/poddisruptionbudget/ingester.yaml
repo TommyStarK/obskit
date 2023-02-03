@@ -1,0 +1,17 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tempo-distributed-ingester
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: ingester
+    app.kubernetes.io/part-of: memberlist
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo-distributed
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/component: ingester

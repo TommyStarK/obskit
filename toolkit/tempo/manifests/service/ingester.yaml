@@ -1,0 +1,25 @@
+---
+# Source: tempo-distributed/templates/service/ingester.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-distributed-ingester
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: ingester
+spec:
+  selector:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: ingester
+  ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: 3100
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: 9095

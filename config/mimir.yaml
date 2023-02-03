@@ -1,0 +1,43 @@
+namespace: obskit
+
+autoscaling: false
+minikube: true
+persistence: false
+selfmonitor: false
+setresources: false
+
+log:
+  format: logfmt
+  level: debug
+
+ingress:
+  enable: false
+  host: mimir.obskit.com
+
+compactor:
+  compaction_interval: 5m
+
+distributor:
+  maxReplicas: 2
+
+gateway:
+  maxReplicas: 2
+
+ingester:
+  maxReplicas: 2
+
+querier:
+  maxReplicas: 4
+
+query_frontend:
+  maxReplicas: 2
+
+store_gateway:
+  maxReplicas: 2
+
+storage:
+  s3:
+    access_key: <ACCES_KEY>
+    secret_access_key: <SECRET_ACCES_KEY>
+    endpoint: <ENDPOINT>
+    bucket: <BUCKET_NAME>

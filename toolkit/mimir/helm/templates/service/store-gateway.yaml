@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-store-gateway-zone-a
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-a
+    rollout-group: store-gateway
+    zone: zone-a
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    rollout-group: store-gateway
+    zone: zone-a
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-store-gateway-zone-b
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-b
+    rollout-group: store-gateway
+    zone: zone-b
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    rollout-group: store-gateway
+    zone: zone-b
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-store-gateway-zone-c
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    app.kubernetes.io/part-of: memberlist
+    name: store-gateway-zone-c
+    rollout-group: store-gateway
+    zone: zone-c
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+    rollout-group: store-gateway
+    zone: zone-c
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http-metrics
+      targetPort: http-metrics
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc

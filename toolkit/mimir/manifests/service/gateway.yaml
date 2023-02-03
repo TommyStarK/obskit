@@ -1,0 +1,22 @@
+---
+# Source: mimir-distributed/templates/service/gateway.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-gateway
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gateway
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gateway
+  ports:
+    - name: http-metric
+      port: 80
+      targetPort: http-metric
+      protocol: TCP

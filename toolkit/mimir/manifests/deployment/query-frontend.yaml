@@ -1,0 +1,93 @@
+---
+# Source: mimir-distributed/templates/deployment/query-frontend.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-distributed-query-frontend
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: query-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mimir-distributed
+      app.kubernetes.io/instance: mimir
+      app.kubernetes.io/component: query-frontend
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mimir-distributed
+        app.kubernetes.io/instance: mimir
+        app.kubernetes.io/component: query-frontend
+    spec:
+
+      serviceAccountName: mimir-distributed
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 180
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: mimir-distributed
+              app.kubernetes.io/instance: mimir
+              app.kubernetes.io/component: query-frontend
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-distributed-config
+        - name: runtime-config
+          configMap:
+            name: mimir-distributed-runtime
+        - name: data
+          emptyDir: {}
+        - name: active-queries
+          emptyDir: {}
+      containers:
+        - name: query-frontend
+          image: "grafana/mimir:2.5.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-target=query-frontend"
+            - "-config.expand-env=true"
+            - "-config.file=/etc/mimir/config.yaml"
+          ports:
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: grpc
+              containerPort: 9095
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http-metrics
+            initialDelaySeconds: 45
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: runtime-config
+              mountPath: /var/mimir
+            - name: config
+              mountPath: /etc/mimir
+            - name: data
+              mountPath: /data
+            - name: active-queries
+              mountPath: /active-query-tracker

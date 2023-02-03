@@ -1,0 +1,32 @@
+---
+# Source: tempo-distributed/templates/servicemonitor/compactor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tempo-distributed-compactor
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: compactor
+spec:
+  endpoints:
+    - port: http-metrics
+      relabelings:
+        - sourceLabels: [job]
+          replacement: "obskit/compactor"
+          targetLabel: job
+      scheme: http
+  namespaceSelector:
+    matchNames:
+    - obskit
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo-distributed
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/component: compactor
+    matchExpressions:
+      - key: prometheus.io/service-monitor
+        operator: NotIn
+        values:
+          - "false"

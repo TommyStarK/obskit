@@ -1,0 +1,26 @@
+---
+# Source: loki-distributed/templates/service/index-gateway.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-distributed-index-gateway
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: index-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: index-gateway
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: grpc
+      protocol: TCP

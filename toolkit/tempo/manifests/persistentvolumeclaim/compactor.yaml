@@ -1,0 +1,14 @@
+---
+# Source: tempo-distributed/templates/persistentvolumeclaim/compactor.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tempo-distributed-compactor
+  namespace: obskit
+spec:
+  storageClassName: tempo-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

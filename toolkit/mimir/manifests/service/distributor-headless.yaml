@@ -1,0 +1,25 @@
+---
+# Source: mimir-distributed/templates/service/distributor-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributed-distributor-headless
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/part-of: memberlist
+    # prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: distributor
+  ports:
+    - port: 9095
+      protocol: TCP
+      name: grpc
+      targetPort: grpc

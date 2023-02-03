@@ -1,0 +1,49 @@
+---
+# Source: tempo-distributed/templates/statefulset/memcached.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo-distributed-memcached
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: memcached
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tempo-distributed
+      app.kubernetes.io/instance: tempo
+      app.kubernetes.io/component: memcached
+  serviceName: tempo-distributed-memcached
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tempo-distributed
+        app.kubernetes.io/instance: tempo
+        app.kubernetes.io/component: memcached
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: tempo-distributed
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - image: docker.io/memcached:1.5.17-alpine
+          imagePullPolicy: IfNotPresent
+          name: memcached
+          ports:
+            - containerPort: 11211
+              name: client
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000

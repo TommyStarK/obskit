@@ -1,0 +1,31 @@
+---
+# Source: tempo-distributed/templates/ingress/gateway.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tempo-distributed-gateway
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: tempo-distributed
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: gateway
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  rules:
+    - host: tempo.obskit.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tempo-distributed-gateway
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - tempo.obskit.com
+      secretName: tempo-distributed-gateway-tls

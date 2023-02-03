@@ -1,0 +1,28 @@
+---
+# Source: loki-distributed/templates/service/index-gateway-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-distributed-index-gateway-headless
+  namespace: obskit
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: index-gateway
+    # prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: index-gateway
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: grpc
+      protocol: TCP

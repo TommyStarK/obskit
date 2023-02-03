@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: {{ .Values.remotes.loki.url }}
+        jsonData:
+          maxLines: 5000
+
+      - name: Mimir
+        type: prometheus
+        uid: mimir
+        access: proxy
+        url: {{.Values.remotes.mimir.url }}
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        access: proxy
+        url: {{.Values.remotes.tempo.url }}
+        jsonData:
+          httpMethod: GET
+          serviceMap:
+            datasourceUid: 'mimir'
+          search:
+            hide: false
+          nodeGraph:
+            enabled: true
+          lokiSearch:
+            datasourceUid: 'loki'
+
+          # tracesToLogs:
+          #   datasourceUid: 'loki'
+          #   tags: ['job', 'instance', 'pod', 'namespace']
+          #   mappedTags: [{ key: 'service.name', value: 'service' }]
+          #   mapTagNamesEnabled: false
+          #   spanStartTimeShift: '1h'
+          #   spanEndTimeShift: '1h'
+          #   filterByTraceID: false
+          #   filterBySpanID: false
+          # tracesToMetrics:
+          #   datasourceUid: 'prometheus'
+          #   tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+          #   queries:
+          #     - name: 'Sample query'
+          #       query: 'sum(rate(tempo_spanmetrics_latency_bucket{$__tags}[5m]))'
+          # search:
+          #   hide: false
+          # nodeGraph:
+          #   enabled: true
+          # lokiSearch:
+          #   datasourceUid: 'loki'

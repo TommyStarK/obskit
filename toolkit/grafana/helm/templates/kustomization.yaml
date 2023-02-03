@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- configmap/default.yaml
+- configmap/datasources.yaml
+- secret/grafana.yaml
+- serviceaccount/grafana.yaml
+- clusterrole/grafana.yaml
+- clusterrolebinding/grafana.yaml
+- role/grafana.yaml
+- rolebinding/grafana.yaml
+- service/grafana.yaml
+- deployment/grafana.yaml
+{{ if eq .Values.ingress.enable true }}
+- secret/grafana-tls.yaml
+- ingress/grafana.yaml
+{{ end }}
