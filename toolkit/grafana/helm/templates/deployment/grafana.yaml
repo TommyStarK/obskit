@@ -20,15 +20,10 @@ spec:
       labels:
         app.kubernetes.io/name: grafana
         app.kubernetes.io/instance: grafana
-      # annotations:
-      #   checksum/config: 61dd94a437761c10b2a1cdf3e3ca62aa9ef088ca794a8378e841d144fdc7b61d
-      #   checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-      #   checksum/sc-dashboard-provider-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-      #   checksum/secret: c4b737d5fe714a995fef0c06158e3c365623845928ff6c24c74d4ec0cfed904b
     spec:
+      enableServiceLinks: true
       serviceAccountName: grafana
       automountServiceAccountToken: true
-      enableServiceLinks: true
       securityContext:
         fsGroup: 472
         runAsGroup: 472
@@ -40,7 +35,7 @@ spec:
         - name: datasources
           configMap:
             name: grafana-datasources
-        - name: storage
+        - name: data
           emptyDir: {}
       initContainers:
         - name: init-chown-data
@@ -55,7 +50,7 @@ spec:
             runAsNonRoot: false
             runAsUser: 0
           volumeMounts:
-            - name: storage
+            - name: data
               mountPath: /var/lib/grafana
       containers:
         - name: grafana
@@ -112,5 +107,5 @@ spec:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
               subPath: datasources.yaml
-            - name: storage
+            - name: data
               mountPath: /var/lib/grafana
