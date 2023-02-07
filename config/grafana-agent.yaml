@@ -1,4 +1,4 @@
-namespace: obskit
+namespace: default
 cluster_name: minikube
 
 server:

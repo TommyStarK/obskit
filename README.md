@@ -63,7 +63,7 @@ Examples:
 
 ## Demo using GKE + Minikube
 
-To demonstrate how to use `obskit`, we will use [GKE](https://cloud.google.com/kubernetes-engine) and [minkube](https://minikube.sigs.k8s.io/docs/). Feel free to use the cloud provider or whatever setup you want. Be aware of the required changes if you do so.
+To demonstrate how to use `obskit`, we will use [GKE](https://cloud.google.com/kubernetes-engine) and [minikube](https://minikube.sigs.k8s.io/docs/). Feel free to use the cloud provider or whatever setup you want. Be aware of the required changes if you do so.
 
 For demo purposes, the `LGTM` stack will be deployed **without** enabling data persistence, auto scaling, pod resources, ingress. See the [production readiness](https://github.com/TommyStarK/obskit#production-readiness) section for more details regarding these topics.
 
@@ -78,12 +78,18 @@ First step, let's create the buckets used as long term storage by `Loki`, `Mimir
 ```
 
 Once it's done, retrieve the access key, secret access key and the endpoint for being able to connect to your buckets.
-Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L43) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L37-L41) config file with the credentials so they can access their own bucket.
+Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L43) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L38-L42) config file with the credentials so they can access their own bucket.
 
 Now we can proceed and create the dedicated cluster for observability
 
 ```bash
 ❯ gcloud container clusters create obskit-cluster --machine-type e2-standard-8
+```
+
+Once the cluster is ready, create the `obskit` namespace
+
+```bash
+❯ kubectl create namespace obskit
 ```
 
 For demo purposes we will use `minikube` to deploy the agent
@@ -104,13 +110,39 @@ Let's setup the `LGTM` stack to the « observability » dedicated cluster
 ❯ ./obskit --setup-cluster --cluster=<CLUSTER_NAME>
 ```
 
-Finally deploy the telemetry agent to `minikube`
+Before deploying the telemetry agent we need to retrieve the endpoints to communicate with `Loki`, `Mimir` and `Tempo`
+
+```bash
+❯ kubectl get -n obskit service loki-distributed-gateway| awk 'NR>1 {print $4}'
+34.90.138.39
+
+❯ kubectl get -n obskit service mimir-distributed-gateway| awk 'NR>1 {print $4}'
+34.90.210.130
+
+❯ kubectl get -n obskit service tempo-distributed-gateway| awk 'NR>1 {print $4}'
+35.204.77.27
+```
+
+Update the [grafana-agent remotes URLs](https://github.com/TommyStarK/obskit/blob/main/config/grafana-agent.yaml#L12-L19) with the according values and render the chart template
+
+```bash
+❯ ./obskit --render-template --target=grafana-agent
+```
+
+Next, deploy the telemetry agent to `minikube`
 
 ```bash
 ❯ ./obskit --deploy-agent --cluster=minikube
 ```
 
-That's it :smile:. Run the following commmand to access `Grafana`
+Finally, for demo purposes you can deploy a log generator and [xk6-tracing](https://github.com/grafana/xk6-distributed-tracing) to minikube
+
+```bash
+❯ kubectl apply -f demo/log-gen.yaml
+❯ kubectl apply -f demo/xk6-tracing.yaml
+```
+
+That's it, run the following commmand to access `Grafana` and enjoy :smile:
 
 ```bash
 ❯ open "http://$(kubectl get -n obskit svc grafana| awk 'NR>1 {print $4}'):80/login"

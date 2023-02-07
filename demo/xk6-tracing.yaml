@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xk6-tracing
+  namespace: default
+  labels:
+    app: xk6-tracing
+spec:
+  selector:
+    matchLabels:
+      app: xk6-tracing
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: xk6-tracing
+    spec:
+      containers:
+      - name: xk6-tracing
+        image: ghcr.io/grafana/xk6-client-tracing:v0.0.2
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: ENDPOINT
+            value: grafana-agent:4317

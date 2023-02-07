@@ -57,6 +57,11 @@ data:
           proxy_pass       http://tempo-distributed-distributor.{{ .Values.namespace }}.svc.cluster.local:4318/v1/traces;
         }
 
+        # grafana agent otlp exporter is trying to export traces to /v1/traces and not /otlp/v1/traces
+        location = /v1/traces {
+          proxy_pass       http://tempo-distributed-distributor.{{ .Values.namespace }}.svc.cluster.local:4318/v1/traces;
+        }
+
         location ^~ /api {
           proxy_pass       http://tempo-distributed-query-frontend.{{ .Values.namespace }}.svc.cluster.local:3100$request_uri;
         }

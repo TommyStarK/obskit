@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: ingester
     app.kubernetes.io/part-of: memberlist
 spec:
-  replicas: 1
+  replicas: 2 # otlp exporter needs at least 2 replicas
   serviceName: tempo-distributed-ingester
   podManagementPolicy: Parallel
   selector:

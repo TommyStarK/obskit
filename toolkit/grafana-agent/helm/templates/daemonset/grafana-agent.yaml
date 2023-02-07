@@ -79,6 +79,8 @@ spec:
             ports:
               - containerPort: 80
                 name: http-metrics
+              - containerPort: 4317
+                name: otlp-grpc
             readinessProbe:
               httpGet:
                 path: /-/ready

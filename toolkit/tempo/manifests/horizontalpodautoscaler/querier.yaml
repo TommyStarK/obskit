@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: querier
 spec:
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 4
   metrics:
     - type: Resource
       resource:

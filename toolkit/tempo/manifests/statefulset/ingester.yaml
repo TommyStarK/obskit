@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: ingester
     app.kubernetes.io/part-of: memberlist
 spec:
-  replicas: 1
+  replicas: 2 # otlp exporter needs at least 2 replicas
   serviceName: tempo-distributed-ingester
   podManagementPolicy: Parallel
   selector:
@@ -30,26 +30,6 @@ spec:
         app.kubernetes.io/component: ingester
         app.kubernetes.io/part-of: memberlist
     spec:
-
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: tempo-distributed
-                    app.kubernetes.io/instance: tempo
-                    app.kubernetes.io/component: ingester
-                topologyKey: kubernetes.io/hostname
-            - weight: 75
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: tempo-distributed
-                    app.kubernetes.io/instance: tempo
-                    app.kubernetes.io/component: ingester
-                topologyKey: topology.kubernetes.io/zone
 
       enableServiceLinks: false
       serviceAccountName: tempo-distributed

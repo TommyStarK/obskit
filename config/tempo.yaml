@@ -1,7 +1,7 @@
 namespace: obskit
 
 autoscaling: false
-minikube: false
+minikube: true
 persistence: false
 selfmonitor: false
 setresources: false
@@ -18,19 +18,19 @@ compactor:
   compaction_interval: 5m
 
 distributor:
-  maxReplicas: 3
+  maxReplicas: 2
 
 gateway:
-  maxReplicas: 3
+  maxReplicas: 2
 
 ingester:
-  maxReplicas: 3
+  maxReplicas: 4
 
 querier:
-  maxReplicas: 3
+  maxReplicas: 4
 
 query_frontend:
-  maxReplicas: 3
+  maxReplicas: 2
 
 storage:
   boltdb_shipper:

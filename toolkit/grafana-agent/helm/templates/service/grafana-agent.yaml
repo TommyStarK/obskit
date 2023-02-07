@@ -16,4 +16,8 @@ spec:
     - name: http-metrics
       port: 80
       targetPort: 80
-      protocol: "TCP"
+      protocol: TCP
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP

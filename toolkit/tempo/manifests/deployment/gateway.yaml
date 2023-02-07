@@ -26,25 +26,6 @@ spec:
         app.kubernetes.io/component: gateway
     spec:
 
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: tempo-distributed
-                  app.kubernetes.io/instance: tempo
-                  app.kubernetes.io/component: gateway
-              topologyKey: kubernetes.io/hostname
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: tempo-distributed
-                    app.kubernetes.io/instance: tempo
-                    app.kubernetes.io/component: gateway
-                topologyKey: topology.kubernetes.io/zone
-
       enableServiceLinks: false
       serviceAccountName: tempo-distributed
       securityContext:

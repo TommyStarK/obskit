@@ -79,6 +79,9 @@ spec:
               protocol: TCP
             - containerPort: 3100
               name: http-metrics
+            - containerPort: 4317
+              name: otlp-grpc
+              protocol: TCP
             - containerPort: 4318
               name: otlp-http
               protocol: TCP

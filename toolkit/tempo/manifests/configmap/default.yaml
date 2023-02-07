@@ -32,7 +32,11 @@ data:
           store: memberlist
 
     distributor:
-      # receivers: null
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+            http:
       ring:
         kvstore:
           store: memberlist
@@ -50,7 +54,7 @@ data:
       join_members:
       - tempo-distributed-gossip-ring
 
-    metrics_generator_enabled: false
+    metrics_generator_enabled: true
 
     multitenancy_enabled: false
 
