@@ -1,0 +1,14 @@
+{{ if eq .Values.persistence true }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tempo-distributed-ingester
+  namespace: {{ .Values.namespace }}
+spec:
+  storageClassName: tempo-distributed-storageclass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+{{ end }}

@@ -1,8 +1,10 @@
 namespace: obskit
 
+test: false
+
 log:
   format: console
-  level: debug
+  level: info
 
 ingress:
   enable: false

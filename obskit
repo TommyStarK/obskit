@@ -1,7 +1,131 @@
 #!/usr/local/bin/bash
 
-. ${PWD}/hack/helm.sh
-. ${PWD}/hack/kubectl.sh
+declare -a binaries=(
+	"helm"
+	"kubectl"
+)
+
+declare -A charts=(
+	["agent"]="agent"
+	["grafana"]="grafana"
+	["loki"]="loki-distributed"
+	["mimir"]="mimir-distributed"
+	["tempo"]="tempo-distributed"
+)
+
+declare -a tools=(
+	"agent"
+	"grafana"
+	"loki"
+	"mimir"
+	"tempo"
+)
+
+__info() {
+	timestamp=`TZ=UTC date +%Y-%m-%d.%H:%M:%S`
+	echo "[$timestamp] $1"
+}
+
+__exit_on_failure() {
+	[ $? -ne 0 ] && __info $1 && exit 1
+}
+
+__k8s_context_handler() {
+	if [ ! -z "$CLUSTER" ]; then
+		kubectl config use-context $CLUSTER >/dev/null 2>&1
+		__exit_on_failure
+	fi
+}
+
+helm::template() {
+	local targets=()
+	if [ $# -eq 0 ]; then
+		targets=("${tools[@]}")
+	else
+		targets+=("$1")
+	fi
+
+	for target in "${targets[@]}"; do
+		local chart="${charts[$target]}"
+
+		if [ -z "$chart" ]; then
+			__info "unknown template: $target"
+			exit 1
+		else
+			__info "rendering chart template: $chart"
+
+			rm -rf ./toolkit/$target/manifests
+			mkdir -p ./toolkit/$target/manifests
+
+			tmp=$(mktemp -d -t chart-$target.XXXXXX)
+
+			helm template tmp ./toolkit/$target/ --output-dir $tmp >/dev/null
+			__exit_on_failure
+
+			mv $tmp/$chart/templates/* ./toolkit/$target/manifests/
+			rm -rf $tmp
+		fi
+	done
+}
+
+delete() {
+	__k8s_context_handler
+
+	IFS=','
+	read -a targets <<< "$TARGET"
+
+	for target in "${targets[@]}"; do
+		helm uninstall $target
+	done
+}
+
+deploy_agent() {
+	__k8s_context_handler
+	__info "deploy agent on cluster: $(kubectl config current-context)"
+	helm install --name-template agent toolkit/agent -f toolkit/agent/values.yaml
+}
+
+render_template() {
+	if [ -z "$TARGET" ]; then
+		helm::template
+	else
+		IFS=','
+		read -a targets <<< "$TARGET"
+
+		for target in "${targets[@]}"; do
+			helm::template $target
+		done
+	fi
+}
+
+setup_cluster() {
+	__k8s_context_handler
+
+	if [ -z "$TARGET" ]; then
+		__info "setup LGTM stack to cluster: $(kubectl config current-context)"
+		helm install --name-template loki toolkit/loki -f toolkit/loki/values.yaml
+		helm install --name-template mimir toolkit/mimir -f toolkit/mimir/values.yaml
+		helm install --name-template tempo toolkit/tempo -f toolkit/tempo/values.yaml
+		helm install --name-template grafana toolkit/grafana -f toolkit/grafana/values.yaml
+	else
+		IFS=','
+		read -a targets <<< "$TARGET"
+
+		for target in "${targets[@]}"; do
+			if [ -z "${charts[$target]}" ]; then
+				__info "unknown target: $target"
+				exit 1
+			else
+				__info "deploying $target to cluster: $(kubectl config current-context)"
+				helm install --name-template $target toolkit/$target -f toolkit/$target/values.yaml
+			fi
+		done
+	fi
+}
+
+for binary in "${binaries[@]}"; do
+	! command -v $binary >/dev/null 2>&1 && __info "$binary not found" && exit 1
+done
 
 for i in "$@"; do
 	case $i in
@@ -54,10 +178,10 @@ Examples:
 	./obskit --setup-cluster --cluster=demo
 
 	# Deploy Loki and Mimir to Kubernetes cluster 'demo'
-	./obskit --setup-cluster --cluster=demo --target=loki,mimir
+	./obskit --setup-cluster -c=demo -t=loki,mimir
 
 	# Delete Loki and Mimir from Kubernetes cluster 'demo'
-	./obskit --delete --cluster=demo --target=loki,mimir
+	./obskit -c=demo -t=loki,mimir --delete
 EOF
 		;;
 		-*|--*)
@@ -69,74 +193,12 @@ EOF
 	esac
 done
 
-__context_handler() {
-	if [ ! -z "$CLUSTER" ]; then
-		kubectl::context::set $CLUSTER >/dev/null 2>&1
-		check::status
-	fi
-}
-
-__delete() {
-	__context_handler
-
-	IFS=','
-	read -a targets <<< "$TARGET"
-
-	for target in "${targets[@]}"; do
-		kubectl::delete $target
-	done
-}
-
-__deploy_agent() {
-	__context_handler
-	__info "deploy agent on cluster: $(kubectl::context::current)"
-	kubectl::apply grafana-agent
-}
-
-__render_template() {
-	if [ -z "$TARGET" ]; then
-		helm::template
-	else
-		IFS=','
-		read -a targets <<< "$TARGET"
-
-		for target in "${targets[@]}"; do
-			helm::template $target
-		done
-	fi
-}
-
-__setup_cluster() {
-	__context_handler
-
-	if [ -z "$TARGET" ]; then
-		__info "setup LGTM stack to cluster: $(kubectl::context::current)"
-		kubectl::apply loki
-		kubectl::apply mimir
-		kubectl::apply tempo
-		kubectl::apply grafana
-	else
-		IFS=','
-		read -a targets <<< "$TARGET"
-
-		for target in "${targets[@]}"; do
-			if [ -z "${charts[$target]}" ]; then
-				__info "unknown target: $target"
-				exit 1
-			else
-				__info "deploying $target to cluster: $(kubectl::context::current)"
-				kubectl::apply $target
-			fi
-		done
-	fi
-}
-
 if [[ "$AGENT_DEPLOY" = "YES" ]]; then
-    __deploy_agent
+    deploy_agent
 elif [[ "$RENDERING_TEMPLATE" = "YES" ]]; then
-    __render_template
+    render_template
 elif [[ "$CLUSTER_SETUP" = "YES" ]]; then
-    __setup_cluster
+    setup_cluster
 elif [[ "$DELETE" = "YES" ]]; then
-    __delete
+    delete
 fi

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: xk6-tracing
-  namespace: default
+  namespace: obskit
   labels:
     app: xk6-tracing
 spec:
@@ -21,4 +21,4 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: ENDPOINT
-            value: grafana-agent:4317
+            value: agent:4317

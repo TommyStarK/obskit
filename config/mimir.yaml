@@ -5,10 +5,11 @@ minikube: true
 persistence: false
 selfmonitor: false
 setresources: false
+test: false
 
 log:
   format: logfmt
-  level: debug
+  level: info
 
 ingress:
   enable: false
@@ -40,4 +41,4 @@ storage:
     access_key: <ACCES_KEY>
     secret_access_key: <SECRET_ACCES_KEY>
     endpoint: <ENDPOINT>
-    bucket: <BUCKET_NAME>
+    bucket: obskit-mimir

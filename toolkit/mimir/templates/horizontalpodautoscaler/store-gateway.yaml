@@ -1,0 +1,91 @@
+{{ if eq .Values.autoscaling true }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mimir-distributed-store-gateway-zone-a
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+spec:
+  minReplicas: 1
+  maxReplicas: {{ .Values.store_gateway.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: mimir-distributed-store-gateway-zone-a
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mimir-distributed-store-gateway-zone-b
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+spec:
+  minReplicas: 1
+  maxReplicas: {{ .Values.store_gateway.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: mimir-distributed-store-gateway-zone-b
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mimir-distributed-store-gateway-zone-c
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: mimir-distributed
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: store-gateway
+spec:
+  minReplicas: 1
+  maxReplicas: {{ .Values.store_gateway.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: mimir-distributed-store-gateway-zone-c
+{{ end }}

@@ -1,12 +1,10 @@
 # obskit
 
-`obskit` is an attempt to create a toolkit to ease the setup of an « observability as a service » solution running on Kubernetes and designed to « observe » Kubernetes cluster(s).
+`obskit` is an attempt to ease the setup of an observability stack running on Kubernetes. It is relying exclusively upon [Grafana's open source projects](https://github.com/grafana), the `LGTM` stack.
 
-`obskit` is relying exclusively upon [Grafana's open source projects](https://github.com/grafana), the `LGTM` stack. The idea is to have an ad-hoc, reproducible, configurable, extendable way of deploying grafana's tools in a dedicated cluster for observability and run the telemetry agent on Kubernetes cluster(s) we want to watch over.
+The idea is to have an ad-hoc, reproducible, configurable, extendable way of deploying Grafana's tools in a dedicated cluster for observability. It also helps to deploy the agent on the Kubernetes cluster(s) of your choice, giving you the freedom to choose which application(s) you want to monitor.
 
-`obskit` aims to be production-ready. Meaning all components are deployed in `microservices` mode and settings for production readiness
-will be documented [here](https://github.com/TommyStarK/obskit#production-readiness). It covers things like capacity planning, pod resources,
-data persistence, using Ingress, autoscaling, rolling updates and self-monitoring.
+The stack is deployed in `microservices` mode. You will find a [section](https://github.com/TommyStarK/obskit#production-readiness) gathering the different links I found useful to decide how to properly deploy this stack to be used in production and meet my needs/constraints. It covers things like capacity planning, pod resources, data persistence, using Ingress, autoscaling, rolling updates and self-monitoring.
 
 The `LGTM` stack:
 
@@ -17,7 +15,7 @@ The `LGTM` stack:
 - Telemetry agent:
 	- [Agent](https://github.com/grafana/agent)
 
-:warning: I am neither a Grafana employee nor a Kubernetes guru. I do not claim to cover each use cases. You should first fork this repository, review the code, and remove things you don’t want or need. Don’t blindly use my configs unless you know what that entails.
+:warning: I am neither a Grafana employee nor a Kubernetes guru. You should first fork this repository, review the code, and remove things you don’t want or need. Don’t blindly use my configs unless you know what that entails.
 
 ## Prerequisites
 
@@ -27,8 +25,9 @@ The `LGTM` stack:
 
 ## Usage
 
-Feel free to edit the [config files](https://github.com/TommyStarK/obskit/tree/main/config) to adapt `obskit` to your needs.
-You might want to update the [agent config](https://github.com/TommyStarK/obskit/blob/main/toolkit/grafana-agent/helm/templates/secret/grafana-agent.yaml) as well as [Grafana config](https://github.com/TommyStarK/obskit/tree/main/toolkit/grafana/helm/templates/configmap).
+Feel free to edit the [config files](https://github.com/TommyStarK/obskit/tree/main/config) to fit to your needs.
+You might want to update the [agent config](https://github.com/TommyStarK/obskit/blob/main/toolkit/agent/templates/secret/agent.yaml) as well as [Grafana config](https://github.com/TommyStarK/obskit/tree/main/toolkit/grafana/templates/configmap) in order to highlight additional metrics or any insight you may need.
+
 
 ```bash
 ❯ ./obskit -h
@@ -41,11 +40,11 @@ Usage: 	obskit [options] --deploy-agent
 
 Options:
 	-c | --cluster    Specify Kubernetes cluster
-	-t | --target     Grafana tool (grafana,loki,tempo,mimir,grafana-agent)
+	-t | --target     Grafana tool (agent,grafana,loki,mimir,tempo)
 
 Examples:
-	# Render templates for Tempo and Loki
-	./obskit --render-template --target=tempo,loki
+	# Render templates for Grafaba and Tempo
+	./obskit --render-template --target=grafana,tempo
 
 	# Deploy Grafana Agent to minikube
 	./obskit --deploy-agent --cluster=minikube
@@ -78,9 +77,9 @@ First step, let's create the buckets used as long term storage by `Loki`, `Mimir
 ```
 
 Once it's done, retrieve the access key, secret access key and the endpoint for being able to connect to your buckets.
-Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L43) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L38-L42) config file with the credentials so they can access their own bucket.
+Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L43) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L38-L42) config file with the credentials so they can access their own storage.
 
-Now we can proceed and create the dedicated cluster for observability
+Now we can create the dedicated cluster for observability.
 
 ```bash
 ❯ gcloud container clusters create obskit-cluster --machine-type e2-standard-8
@@ -95,13 +94,7 @@ Once the cluster is ready, create the `obskit` namespace
 For demo purposes we will use `minikube` to deploy the agent
 
 ```bash
-❯ minikube start --memory 12288 --cpus 4
-```
-
-Review the different config files, once everything is configured as you wish, render the charts templates
-
-```bash
-❯ ./obskit --render-template
+❯ minikube start
 ```
 
 Let's setup the `LGTM` stack to the « observability » dedicated cluster
@@ -123,11 +116,8 @@ Before deploying the telemetry agent we need to retrieve the endpoints to commun
 35.204.77.27
 ```
 
-Update the [grafana-agent remotes URLs](https://github.com/TommyStarK/obskit/blob/main/config/grafana-agent.yaml#L12-L19) with the according values and render the chart template
-
-```bash
-❯ ./obskit --render-template --target=grafana-agent
-```
+Update the [agent remotes URLs](https://github.com/TommyStarK/obskit/blob/main/config/agent.yaml#L12-L19) with the according values.
+> If HTTPS is not enabled, port is 80
 
 Next, deploy the telemetry agent to `minikube`
 
@@ -152,7 +142,7 @@ That's it, run the following commmand to access `Grafana` and enjoy :smile:
 
 > Grafana password: `gbpotO3SjLzpxIIu6xxthZQmfv29pw2eDn62dGsG`
 
-> Feel free to update them, ([secret file](https://github.com/TommyStarK/obskit/blob/main/toolkit/grafana/helm/templates/secret/grafana.yaml))
+> Feel free to update them, ([secret file](https://github.com/TommyStarK/obskit/blob/main/toolkit/grafana/templates/secret/grafana.yaml))
 
 ### Cleanup
 
@@ -160,7 +150,7 @@ That's it, run the following commmand to access `Grafana` and enjoy :smile:
 
 ```bash
 ❯ ./obskit --delete --cluster=<CLUSTER_NAME> --target=grafana,loki,mimir,tempo
-❯ ./obskit --delete --cluster=minikube --target=grafana-agent
+❯ ./obskit --delete --cluster=minikube --target=agent
 ```
 
 - remove clusters
@@ -181,9 +171,6 @@ That's it, run the following commmand to access `Grafana` and enjoy :smile:
 ## Production readiness
 
 ### Capacity planning
-
-In my humble opinion, capacity planning is one of the main challenges that infrastructure engineers have to face.
-There is no default or easy answer. I heavily recommend to read the following links in depth.
 
 - [Kubernetes production environment](https://kubernetes.io/docs/setup/production-environment/)
 - [Kubernetes best practices](https://kubernetes.io/docs/setup/best-practices/)
@@ -222,7 +209,7 @@ data persistence.
 
 You can repeat the steps below for each service you want to enable data persistence.
 
-1. Update the storage class and size to fit to your needs (files are located at `toolkit/<SERVICE>/helm/templates/storageclass`, `toolkit/<SERVICE>/helm/templates/persistentvolumeclaim`)
+1. Update the storage class and size to fit to your needs (files are located at `toolkit/<SERVICE>/templates/storageclass`, `toolkit/<SERVICE>/templates/persistentvolumeclaim`)
 2. Set the `persistence` attribute to `true` in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
 3. Render chart templates
 
@@ -235,10 +222,10 @@ template(s) accordingly.
 
 You can repeat the steps below for each service you want to be accessible over `HTTPS` from outside the cluster.
 
-1. Add the certificate and key to the secret template (file is located under `toolkit/<SERVICE>/helm/templates/secret/<SERVICE>-tls.yaml`)
+1. Add the certificate and key to the secret template (file is located under `toolkit/<SERVICE>/templates/secret/<SERVICE>-tls.yaml`)
 2. Set the `ingress.enable` attribute to `true` in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
 3. Set the `ingress.host` attribute with your domain in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
-4. Update the [agent remotes config](https://github.com/TommyStarK/obskit/blob/main/config/grafana-agent.yaml#L12-L19)
+4. Update the [agent remotes config](https://github.com/TommyStarK/obskit/blob/main/config/agent.yaml#L12-L19)
 5. Render chart templates
 
 ### Autoscaling

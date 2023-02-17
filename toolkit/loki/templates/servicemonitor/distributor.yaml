@@ -1,0 +1,20 @@
+{{ if eq .Values.selfmonitor true }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-distributed-distributor
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: distributor
+spec:
+  endpoints:
+    - port: http
+      scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki-distributed
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/component: distributor
+{{ end }}

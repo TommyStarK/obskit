@@ -1,0 +1,19 @@
+namespace: obskit
+cluster_name: minikube
+
+server:
+  log_level: debug
+  log_format: logfmt
+
+metrics:
+  global:
+    scrape_interval: 60s
+
+remotes:
+  loki:
+    url: http://<LOKI_DISTRIBUTED_GATEWAY_LOAD_BALANCER_IP>:80/loki/api/v1/push
+  mimir:
+    url: http://<MIMIR_DISTRIBUTED_GATEWAY_LOAD_BALANCER_IP>:80/api/v1/push
+  tempo:
+    endpoint: http://<TEMPO_DISTRIBUTED_GATEWAY_LOAD_BALANCER_IP>:80
+    insecure: true

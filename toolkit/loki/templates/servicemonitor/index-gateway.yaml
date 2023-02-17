@@ -1,0 +1,25 @@
+{{ if eq .Values.selfmonitor true }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loki-distributed-index-gateway
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: index-gateway
+spec:
+  endpoints:
+    - port: http
+      scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki-distributed
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/component: index-gateway
+    matchExpressions:
+      - key: prometheus.io/service-monitor
+        operator: NotIn
+        values:
+          - "false"
+{{ end }}

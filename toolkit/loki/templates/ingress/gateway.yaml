@@ -1,0 +1,32 @@
+{{ if eq .Values.ingress.enable true }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-distributed-gateway
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: loki-distributed
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: gateway
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: loki-distributed-gateway
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: loki-distributed-gateway-tls
+{{ end }}

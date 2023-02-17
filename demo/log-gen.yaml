@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: log-generator
-  namespace: default
+  namespace: obskit
   labels:
     app: log-generator
 spec:
