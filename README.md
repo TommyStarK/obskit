@@ -43,7 +43,7 @@ Options:
 	-t | --target     Grafana tool (agent,grafana,loki,mimir,tempo)
 
 Examples:
-	# Render templates for Grafaba and Tempo
+	# Render templates for Grafana and Tempo
 	./obskit --render-template --target=grafana,tempo
 
 	# Deploy Grafana Agent to minikube
