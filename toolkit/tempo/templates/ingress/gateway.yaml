@@ -13,6 +13,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
+  ingressClassName: nginx
   rules:
     - host: {{ .Values.ingress.host }}
       http:
