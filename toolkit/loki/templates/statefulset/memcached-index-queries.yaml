@@ -26,26 +26,26 @@ spec:
         app.kubernetes.io/instance: loki
         app.kubernetes.io/component: memcached-index-queries
     spec:
-# {{ if eq .Values.minikube false }}
-#       affinity:
-#         podAntiAffinity:
-#           requiredDuringSchedulingIgnoredDuringExecution:
-#             - labelSelector:
-#                 matchLabels:
-#                   app.kubernetes.io/name: loki-distributed
-#                   app.kubernetes.io/instance: loki
-#                   app.kubernetes.io/component: memcached-index-queries
-#               topologyKey: kubernetes.io/hostname
-#           preferredDuringSchedulingIgnoredDuringExecution:
-#             - weight: 100
-#               podAffinityTerm:
-#                 labelSelector:
-#                   matchLabels:
-#                     app.kubernetes.io/name: loki-distributed
-#                     app.kubernetes.io/instance: loki
-#                     app.kubernetes.io/component: memcached-index-queries
-#                 topologyKey: topology.kubernetes.io/zone
-# {{ end }}
+{{ if eq .Values.minikube false }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: loki-distributed
+                  app.kubernetes.io/instance: loki
+                  app.kubernetes.io/component: memcached-index-queries
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: loki-distributed
+                    app.kubernetes.io/instance: loki
+                    app.kubernetes.io/component: memcached-index-queries
+                topologyKey: topology.kubernetes.io/zone
+{{ end }}
       serviceAccountName: loki-distributed
       securityContext:
         fsGroup: 11211

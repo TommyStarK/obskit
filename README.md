@@ -1,6 +1,6 @@
 # obskit
 
-`obskit` is an attempt to ease the setup of an observability stack running on Kubernetes. It is relying exclusively upon [Grafana's open source projects](https://github.com/grafana), the `LGTM` stack.
+`obskit` is an attempt to ease the setup of an observability stack running on Kubernetes. It is relying exclusively upon [Grafana's open source projects](https://github.com/grafana), the `LGTM` stack. A tiny script `obskit` within this repo will help to achieve that.
 
 The idea is to have an ad-hoc, reproducible, configurable, extendable way of deploying Grafana's tools in a dedicated cluster for observability. It also helps to deploy the agent on the Kubernetes cluster(s) of your choice, giving you the freedom to choose which application(s) you want to monitor.
 
@@ -68,7 +68,7 @@ For demo purposes, the `LGTM` stack will be deployed **without** enabling data p
 
 ### Setup
 
-First step, let's create the buckets used as long term storage by `Loki`, `Mimir` and `Tempo`.
+First step, let's create the buckets used as long term storage by `Loki`, `Mimir` and `Tempo`:
 
 ```bash
 ❯ gcloud storage buckets create gs://obskit-loki/ --uniform-bucket-level-access --location=eu
@@ -77,33 +77,33 @@ First step, let's create the buckets used as long term storage by `Loki`, `Mimir
 ```
 
 Once it's done, retrieve the access key, secret access key and the endpoint for being able to connect to your buckets.
-Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L43) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L38-L42) config file with the credentials so they can access their own storage.
+Update the [Loki](https://github.com/TommyStarK/obskit/blob/main/config/loki.yaml#L61-L65), [Mimir](https://github.com/TommyStarK/obskit/blob/main/config/mimir.yaml#L39-L44) and [Tempo](https://github.com/TommyStarK/obskit/blob/main/config/tempo.yaml#L38-L42) config file with the credentials so they can access their own storage.
 
-Now we can create the dedicated cluster for observability.
+Now we can create the dedicated cluster for observability:
 
 ```bash
 ❯ gcloud container clusters create obskit-cluster --machine-type e2-standard-8
 ```
 
-Once the cluster is ready, create the `obskit` namespace
+Once the cluster is ready, create the `obskit` namespace:
 
 ```bash
 ❯ kubectl create namespace obskit
 ```
 
-For demo purposes we will use `minikube` to deploy the agent
+For demo purposes we will use `minikube` to deploy the agent:
 
 ```bash
 ❯ minikube start
 ```
 
-Let's setup the `LGTM` stack to the « observability » dedicated cluster
+Let's setup the `LGTM` stack to the « observability » dedicated cluster:
 
 ```bash
 ❯ ./obskit --setup-cluster --cluster=<CLUSTER_NAME>
 ```
 
-Before deploying the telemetry agent we need to retrieve the endpoints to communicate with `Loki`, `Mimir` and `Tempo`
+Before deploying the telemetry agent we need to retrieve the endpoints to communicate with `Loki`, `Mimir` and `Tempo`:
 
 ```bash
 ❯ kubectl get -n obskit service loki-distributed-gateway| awk 'NR>1 {print $4}'
@@ -119,13 +119,13 @@ Before deploying the telemetry agent we need to retrieve the endpoints to commun
 Update the [agent remotes URLs](https://github.com/TommyStarK/obskit/blob/main/config/agent.yaml#L12-L19) with the according values.
 > If HTTPS is not enabled, port is 80
 
-Next, deploy the telemetry agent to `minikube`
+Next, deploy the telemetry agent to `minikube`:
 
 ```bash
 ❯ ./obskit --deploy-agent --cluster=minikube
 ```
 
-Finally, for demo purposes you can deploy a log generator and [xk6-tracing](https://github.com/grafana/xk6-distributed-tracing) to minikube
+Finally, for demo purposes you can deploy a log generator and [xk6-tracing](https://github.com/grafana/xk6-distributed-tracing) to minikube:
 
 ```bash
 ❯ kubectl apply -f demo/log-gen.yaml
@@ -211,7 +211,6 @@ You can repeat the steps below for each service you want to enable data persiste
 
 1. Update the storage class and size to fit to your needs (files are located at `toolkit/<SERVICE>/templates/storageclass`, `toolkit/<SERVICE>/templates/persistentvolumeclaim`)
 2. Set the `persistence` attribute to `true` in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
-3. Render chart templates
 
 ### Ingress
 
@@ -226,7 +225,6 @@ You can repeat the steps below for each service you want to be accessible over `
 2. Set the `ingress.enable` attribute to `true` in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
 3. Set the `ingress.host` attribute with your domain in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
 4. Update the [agent remotes config](https://github.com/TommyStarK/obskit/blob/main/config/agent.yaml#L12-L19)
-5. Render chart templates
 
 ### Autoscaling
 
@@ -237,7 +235,6 @@ Resources like `cpu` and `memory` should be specified in the templates (see [use
 You can repeat the steps below for each service you want to enable autoscaling.
 
 1. Set the `autoscaling` attribute to `true` in the according [service config](https://github.com/TommyStarK/obskit/tree/main/config)
-2. Render chart templates
 
 ### Rolling update
 
