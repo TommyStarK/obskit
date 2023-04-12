@@ -28,10 +28,9 @@ The `LGTM` stack:
 Feel free to edit the [config files](https://github.com/TommyStarK/obskit/tree/main/config) to fit to your needs.
 You might want to update the [agent config](https://github.com/TommyStarK/obskit/blob/main/toolkit/agent/templates/secret/agent.yaml) as well as [Grafana config](https://github.com/TommyStarK/obskit/tree/main/toolkit/grafana/templates/configmap) in order to highlight additional metrics or any insight you may need.
 
-
 ```bash
 ❯ ./obskit -h
-obskit - Observability as a service toolkit for Kubernetes
+obskit - Observability toolkit for Kubernetes
 
 Usage: 	obskit [options] --deploy-agent
 	obskit [options] --render-template
@@ -40,11 +39,11 @@ Usage: 	obskit [options] --deploy-agent
 
 Options:
 	-c | --cluster    Specify Kubernetes cluster
-	-t | --target     Grafana tool (agent,grafana,loki,mimir,tempo)
+	-t | --target     Grafana tool (grafana,loki,tempo,mimir,grafana-agent)
 
 Examples:
-	# Render templates for Grafana and Tempo
-	./obskit --render-template --target=grafana,tempo
+	# Render templates for Tempo and Loki
+	./obskit --render-template --target=tempo,loki
 
 	# Deploy Grafana Agent to minikube
 	./obskit --deploy-agent --cluster=minikube
@@ -53,11 +52,10 @@ Examples:
 	./obskit --setup-cluster --cluster=demo
 
 	# Deploy Loki and Mimir to Kubernetes cluster 'demo'
-	./obskit --setup-cluster --cluster=demo --target=loki,mimir
+	./obskit --setup-cluster -c=demo -t=loki,mimir
 
 	# Delete Loki and Mimir from Kubernetes cluster 'demo'
-	./obskit --delete --cluster=demo --target=loki,mimir
-
+	./obskit -c=demo -t=loki,mimir --delete
 ```
 
 ## Demo using GKE + Minikube

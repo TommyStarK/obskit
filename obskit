@@ -156,7 +156,7 @@ for i in "$@"; do
 		-h|--help)
 		shift # past argument with no value
 		cat << EOF
-obskit - Observability as a service toolkit for Kubernetes
+obskit - Observability toolkit for Kubernetes
 
 Usage: 	obskit [options] --deploy-agent
 	obskit [options] --render-template
